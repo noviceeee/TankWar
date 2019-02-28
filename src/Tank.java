@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 public class Tank {// 坦克类
 
@@ -14,9 +15,12 @@ public class Tank {// 坦克类
 	private boolean live = true;//坦克生命状态，默认活着
 
 	private boolean good = true;// 区分敌方我方坦克
+
 	private int x, y;// 坦克初始坐标
 	private boolean bU = false, bD = false, bL = false, bR = false;// 依次代表上、下、左、右四个方向键的状态，当按下某一方向键时对应变量值为true
 
+	private static Random r = new Random();//用于随机指定敌方坦克方向，多个坦克可以共享一个随机数生成器，所以用static声明
+	
 	enum Direction {
 		U, LU, L, LD, D, RD, R, RU, STOP
 	};// 枚举，定义九种运动方向：上，左上，左， 左下，下， 右下， 右，右上，无（ 静止）
@@ -24,21 +28,26 @@ public class Tank {// 坦克类
 	private Direction dir = Direction.STOP;// 坦克方向，默认为静止状态
 	private Direction ptDir = Direction.D;// 炮筒方向默认向下
 
+	private int step = r.nextInt(15);//定义坦克朝某一方向移动的步数，用于使敌方随机运动更加不规则
+	
 	public Tank(int x, int y, boolean good) {// 构造方法，用于创建指定坐标的坦克对象
 		this.x = x;
 		this.y = y;
 		this.good = good;
 	}
 
-	public Tank(int x, int y, boolean good, TankClient tc) {// 构造方法重载，传入TankClient对象，通过持有它的引用来访问成员变量
+	public Tank(int x, int y, boolean good, Direction dir, TankClient tc) {// 构造方法重载，传入TankClient对象，通过持有它的引用来访问成员变量
 		this(x, y, good);// 调用另一个构造方法
 		this.tc = tc;// 初始化tc
+		this.dir = dir;//指定坦克对象的方向
 	}
 
 	public void draw(Graphics g) {// 画坦克
-		if(!live)//如果坦克死亡就不画
+		if(!live){//如果坦克死亡就不画
+			if(!good)
+				tc.tanks.remove(this);//如果是地方坦克，就将其从容器中移出
 			return;
-	
+	}
 		Color c = g.getColor();// 取出当前颜色
 		if (good)
 			g.setColor(Color.RED);// 我方坦克为红色
@@ -123,6 +132,19 @@ public class Tank {// 坦克类
 			x = TankClient.GAME_WIDTH - WIDTH;
 		if (y > TankClient.GAME_HEIGHT - HEIGHT)
 			y = TankClient.GAME_HEIGHT - HEIGHT;
+		
+		if(!good) {//如果是敌方坦克
+			if(step == 0){//步数为零时随机指定新的方向
+			Direction[] dirs = Direction.values();//不能直接根据索引找到枚举中的某一个值，要先将枚举转换成数组
+			int num = r.nextInt(dirs.length);//随机生成一个在[0,length)区间上的整数（含0不含length）作为数组索引
+			dir = dirs[num];
+			step = r.nextInt(15);//随机生成新的步数
+			}
+			step--;
+			
+			if(r.nextInt(10) > 6)//随机开炮，这样设置可以控制开炮频率
+			this.fire();
+		}
 	}
 
 	public void keyPressed(KeyEvent e) {// 当按下按键时
@@ -188,9 +210,11 @@ public class Tank {// 坦克类
 	}
 
 	public Missile fire() {// 坦克发射子弹
+		if(!live)//死了就不能发射
+			return null;
 		int x = this.x + WIDTH / 2 - Missile.WIDTH / 2;// 子弹左上角横坐标
 		int y = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;// 子弹左上角纵坐标
-		Missile m = new Missile(x, y, ptDir, this.tc);// 创建一个和炮筒相同方向，位于坦克中央的子弹对象，并传入TankClient对象
+		Missile m = new Missile(x, y, ptDir, good, this.tc);// 创建一个和炮筒相同方向，位于坦克中央的己方子弹对象，并传入TankClient对象
 		tc.missiles.add(m);// 将子弹放入容器
 		return m;// 返回该子弹对象
 	}
@@ -198,11 +222,16 @@ public class Tank {// 坦克类
 	public Rectangle getRect() {//获取和坦克坐标、宽高相同的方块，用于简单检测子弹和坦克是否碰撞
 		return new Rectangle(x, y, WIDTH, HEIGHT);
 	}
-	public boolean isLive() {//判断坦克是否活着
+	public boolean isLive() {//判断坦克是否活着，由于live属性是私有的，外部无法直接使用，所以向外提供一个访问方法
 		return live;
 	}
 	
 	public void setLive(boolean live) {//设置坦克是否活着
 		this.live = live;
 	}
+	
+	public boolean isGood() {//判断坦克好坏
+		return good;
+	}
+
 }
