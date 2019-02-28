@@ -108,5 +108,11 @@ public class Missile {//子弹类
 		return false;
 	}
 
-	
+	public boolean hitWall(Wall w) {//子弹速度不能太快或墙不能太薄，会发生还来不及判断是否撞上就穿墙而过的情况
+		if(this.live && this.getRect().intersects(w.getRect())) {
+			this.live = false;
+		return true;	
+		}
+		return false;
+	}
 }

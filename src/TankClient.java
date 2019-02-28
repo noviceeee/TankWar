@@ -15,6 +15,8 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 
 	Tank myTank = new Tank(100, 100, true, Tank.Direction.STOP, this);
 	// 创建我方坦克对象，初始坐标（100，100），静止状态，传入当前TankClient对象
+	Wall w1 = new Wall(70, 120, 230, 40, this);//生成两堵墙
+	Wall w2 = new Wall(330, 200, 40, 150, this);
 
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
 	List<Explosion> explosions = new ArrayList<Explosion>(); // 装爆炸的容器
@@ -34,6 +36,8 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			Missile m = missiles.get(i);
 			m.hitTanks(tanks);//判断子弹是否击中容器内的某辆坦克
 			m.hitTank(myTank);//判断子弹是否击中自己的坦克
+			m.hitWall(w1);
+			m.hitWall(w2);
 			m.draw(g);
 		}
 
@@ -44,10 +48,15 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		
 		for(int i = 0; i < tanks.size(); i++) {//遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
+			t.collideWithWall(w1);//坦克撞墙处理
+			t.collideWithWall(w2);
 			t.draw(g);
 		}
 
 		myTank.draw(g);// 调用对象里的draw方法，传入画笔g画出坦克
+		
+		w1.draw(g);
+		w2.draw(g);
 	}
 
 	public void update(Graphics g) {// 对于重量级组件，由于重新绘制时间长，容易产生闪烁的现象，所以一般是采用重写 update 方法，利用双缓冲图片来解决闪烁的问题
