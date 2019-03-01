@@ -13,15 +13,15 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	public static final int GAME_WIDTH = 800;// 窗口宽度
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
-	Tank myTank = new Tank(100, 100, true, Direction.STOP, this);
-	// 创建我方坦克对象，初始坐标（100，100），静止状态，传入当前TankClient对象
+	Tank myTank = new Tank(100, 500, true, Direction.STOP, this);
+	// 创建我方坦克对象，初始坐标（100，500），静止状态，传入当前TankClient对象
 	Wall w1 = new Wall(70, 120, 230, 40, this);// 生成两堵墙
 	Wall w2 = new Wall(500, 200, 40, 150, this);
-	Blood b = new Blood();// 生成血块
 
+	List<Tank> tanks = new ArrayList<Tank>();// 装坦克的容器
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
 	List<Explosion> explosions = new ArrayList<Explosion>(); // 装爆炸的容器
-	List<Tank> tanks = new ArrayList<Tank>();// 装坦克的容器
+	List<Blood> bloods = new ArrayList<Blood>();
 
 	Image offScreenImage = null;// 创建一个虚拟图像，用于实现双缓冲，解决闪烁问题，即:将所有东西画在这个图像上，再一次性显示出来
 
@@ -31,10 +31,11 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		g.drawString("missiles count: " + missiles.size(), 10, 50);// 在合适坐标写出当前子弹数量
 		g.drawString("explosions count: " + explosions.size(), 10, 70);// 当前爆炸数量
 		g.drawString("enemy count: " + tanks.size(), 10, 90);// 敌方坦克数量
+		g.drawString("bloods count: " + bloods.size(), 10, 110);// 血块数量
 		g.setColor(c);// 还原颜色
 		if (tanks.size() == 0)
 			for (int i = 0; i < 10; i++) {// 每当敌方坦克数量为0时就生成十辆
-				tanks.add(new Tank(50 + 40 * (i + 1), 500, false, Direction.D, this));
+				tanks.add(new Tank(50 + 40 * (i + 1), 50, false, Direction.D, this));
 			}
 
 		for (int i = 0; i < missiles.size(); i++) {// 循环操作，取出容器中的子弹并画出来
@@ -46,9 +47,13 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			m.draw(g);
 		}
 
-		for (int i = 0; i < explosions.size(); i++) {// 遍历爆炸所有阶段并画出
+		for (int i = 0; i < explosions.size(); i++) {// 遍历所有爆炸并画出
 			Explosion e = explosions.get(i);
 			e.draw(g);
+		}
+		for (int i = 0; i < bloods.size(); i++) {// 遍历所有血块并画出
+			Blood b = bloods.get(i);
+			b.draw(g);
 		}
 
 		for (int i = 0; i < tanks.size(); i++) {// 遍历所有敌方坦克并画出
@@ -58,9 +63,8 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			t.draw(g);
 		}
 
-		b.draw(g);// 画血块
 		myTank.draw(g);// 调用对象里的draw方法，传入画笔g画出坦克
-		myTank.eat(b);// 吃血块
+		myTank.eat(bloods);
 		w1.draw(g);// 画墙
 		w2.draw(g);
 	}

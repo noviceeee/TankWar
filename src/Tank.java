@@ -10,13 +10,17 @@ public class Tank {// 坦克类
 	public static final int WIDTH = 40;// 坦克宽度
 	public static final int HEIGHT = 40;// 坦克高度
 	public static final int SPEED = 5;// 坦克每次向横纵坐标方向移动的距离，可当作速度
-	public static final int LIFE = 100;// （我方）坦克总血量
+	public static final int LIFE = 5;// 我方坦克总血量
+	public static final int SKILL = 10;// 我方坦克总技能值
 
 	TankClient tc;// 用于访问此类成员变量
 
 	private boolean live = true;// 坦克生命状态，默认活着
 	private int life = LIFE;// （我方）坦克生命值
-	private BloodBar bb = new BloodBar();
+	private BloodBar bb = new BloodBar();//创建血条
+
+	private int skill = SKILL;//我方坦克技能值
+	private SkillBar sb = new SkillBar();//创建技能条
 
 	private boolean good = true;// 区分敌方我方坦克
 
@@ -49,7 +53,7 @@ public class Tank {// 坦克类
 	public void draw(Graphics g) {// 画坦克
 		if (!live) {// 如果坦克死亡就不画
 			if (!good)
-				tc.tanks.remove(this);// 如果是地方坦克，就将其从容器中移出
+				tc.tanks.remove(this);// 如果是敌方坦克，就将其从容器中移出
 			return;
 		}
 		Color c = g.getColor();// 取出当前颜色
@@ -88,8 +92,10 @@ public class Tank {// 坦克类
 		g.setColor(c);// 恢复当前颜色
 
 		move();// 每次画坦克都调用此方法，通过改变坦克坐标实现移动效果
-		if (this.good)// 画出我方坦克血条
+		if (this.good) {// 画出我方坦克血条和技能条
 			bb.draw(g);
+			sb.draw(g);
+		}
 	}
 
 	void move() {// 根据当前方向改变坦克坐标，控制移动
@@ -216,10 +222,11 @@ public class Tank {// 坦克类
 		case KeyEvent.VK_S:// 释放S键时发射超级炮弹
 			superFire();
 			break;
-		case KeyEvent.VK_F2:
+		case KeyEvent.VK_F2:// 我方死亡时按F2键复活，血条技能条重置
 			if (this.live == false) {
 				this.live = true;
 				this.life = LIFE;
+				this.skill = SKILL;
 			}
 			break;
 		}
@@ -251,6 +258,12 @@ public class Tank {// 坦克类
 	}
 
 	public boolean isLive() {// 判断坦克是否活着，由于live属性是私有的，外部无法直接使用，所以向外提供一个访问方法
+		if (!live && !this.isGood() && r.nextInt(5) > 1) {// 如果敌方坦克死亡就有概率掉落血块
+			int x = this.x + WIDTH / 2 - Missile.WIDTH / 2;// 血块左上角横坐标
+			int y = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;// 血块左上角纵坐标
+			Blood b = new Blood(x, y, tc);
+			tc.bloods.add(b);
+		}
 		return live;
 	}
 
@@ -287,10 +300,13 @@ public class Tank {// 坦克类
 		return false;
 	}
 
-	private void superFire() {// 发射超级炮弹（同时朝八个方向发射）
-		Direction[] dirs = Direction.values();// 枚举类型不能直接根据索引取值，应先获取对应数组
-		for (int i = 0; i < dirs.length - 1; i++) {// 向除STOP外的每个方向开炮
-			fire(dirs[i]);
+	private void superFire() {// 有技能值时发射超级炮弹（同时朝八个方向发射）
+		if (skill > 0) {
+			Direction[] dirs = Direction.values();// 枚举类型不能直接根据索引取值，应先获取对应数组
+			for (int i = 0; i < dirs.length - 1; i++) {// 向除STOP外的每个方向开炮
+				fire(dirs[i]);
+			}
+			skill--;// 技能值减少
 		}
 	}
 
@@ -307,20 +323,40 @@ public class Tank {// 坦克类
 			int w = WIDTH * life / LIFE;// 当前血条宽度
 			Color c = g.getColor();
 			g.setColor(Color.RED);
-			g.drawRect(x, y - 10, WIDTH, 5);// 总血条框
+			g.drawRect(x, y - 15, WIDTH, 3);// 血条总宽度
 			g.setColor(Color.RED);
-			g.fillRect(x, y - 10, w, 5);// 当前血条
+			g.fillRect(x, y - 15, w, 3);// 当前血条
 			g.setColor(c);
 
 		}
 	}
 
-	public boolean eat(Blood b) {
-		if (b.isLive() && this.live && this.getRect().intersects(b.getRect())) {
-			this.life += 20;
-			b.setLive(false);
-			return true;
+	public boolean eat(List<Blood> bloods) {// 坦克吃血块回血回技能
+		for (int i = 0; i < bloods.size(); i++) {
+			Blood b = bloods.get(i);
+
+			if (b.isLive() && this.live && this.getRect().intersects(b.getRect())) {// 当血块和我方坦克都活着且碰撞时
+				b.setLive(false);
+				if (this.life < LIFE)// 血条不满时回血，满血时无效
+					this.life += 1;
+				if(this.skill < SKILL)//技能条不满时回复技能
+					this.skill += 2;
+				return true;
+			}
 		}
 		return false;
+	}
+
+	private class SkillBar {
+		public void draw(Graphics g) {
+			int w = WIDTH * skill / SKILL;// 当前技能条宽度
+			Color c = g.getColor();
+			g.setColor(Color.GREEN);
+			g.drawRect(x, y - 10, WIDTH, 3);// 技能条总宽度
+			g.setColor(Color.GREEN);
+			g.fillRect(x, y - 10, w, 3);// 当前技能值
+			g.setColor(c);
+
+		}
 	}
 }
