@@ -10,10 +10,13 @@ public class Tank {// 坦克类
 	public static final int WIDTH = 40;// 坦克宽度
 	public static final int HEIGHT = 40;// 坦克高度
 	public static final int SPEED = 5;// 坦克每次向横纵坐标方向移动的距离，可当作速度
+	public static final int LIFE = 100;// （我方）坦克总血量
 
 	TankClient tc;// 用于访问此类成员变量
 
 	private boolean live = true;// 坦克生命状态，默认活着
+	private int life = LIFE;// （我方）坦克生命值
+	private BloodBar bb = new BloodBar();
 
 	private boolean good = true;// 区分敌方我方坦克
 
@@ -23,14 +26,10 @@ public class Tank {// 坦克类
 
 	private static Random r = new Random();// 用于随机指定敌方坦克方向，多个坦克可以共享一个随机数生成器，所以用static声明
 
-	enum Direction {
-		U, LU, L, LD, D, RD, R, RU, STOP
-	};// 枚举，定义九种运动方向：上，左上，左， 左下，下， 右下， 右，右上，无（ 静止）
-
 	private Direction dir = Direction.STOP;// 坦克方向，默认为静止状态
 	private Direction ptDir = Direction.D;// 炮筒方向默认向下
 
-	private int step = r.nextInt(12)+1;// 定义坦克朝某一方向移动的步数，用于使敌方随机运动更加不规则
+	private int step = r.nextInt(12) + 1;// 定义坦克朝某一方向移动的步数，用于使敌方随机运动更加不规则
 
 	public Tank(int x, int y, boolean good) {// 构造方法，用于创建指定坐标的坦克对象
 		this.x = x;
@@ -89,6 +88,8 @@ public class Tank {// 坦克类
 		g.setColor(c);// 恢复当前颜色
 
 		move();// 每次画坦克都调用此方法，通过改变坦克坐标实现移动效果
+		if (this.good)// 画出我方坦克血条
+			bb.draw(g);
 	}
 
 	void move() {// 根据当前方向改变坦克坐标，控制移动
@@ -133,7 +134,7 @@ public class Tank {// 坦克类
 
 		if (x < 0)// 解决坦克出界问题，运动到窗口边缘时无法前进
 			x = 0;
-		if (y < 40)//窗口的标题栏高度
+		if (y < 40)// 窗口的标题栏高度
 			y = 40;
 		if (x > TankClient.GAME_WIDTH - WIDTH)
 			x = TankClient.GAME_WIDTH - WIDTH;
@@ -145,11 +146,11 @@ public class Tank {// 坦克类
 				Direction[] dirs = Direction.values();// 不能直接根据索引找到枚举中的某一个值，要先将枚举转换成数组
 				int num = r.nextInt(dirs.length);// 随机生成一个在[0,length)区间上的整数（含0不含length）作为数组索引
 				dir = dirs[num];
-				step = r.nextInt(12)+1;// 随机生成新的步数，由于下一步要执行“step--”所以step必须大于0
-			}//否则当step为负数时方向永不改变
+				step = r.nextInt(12) + 1;// 随机生成新的步数，由于下一步要执行“step--”所以step必须大于0
+			} // 否则当step为负数时方向永不改变
 			step--;
 
-			if (r.nextInt(10) > 6)// 随机开炮，这样设置可以控制开炮频率
+			if (r.nextInt(10) > 7)// 随机开炮，这样设置可以控制开炮频率
 				this.fire();
 		}
 	}
@@ -197,9 +198,6 @@ public class Tank {// 坦克类
 	public void keyReleased(KeyEvent e) {// 释放按键时
 		int key = e.getKeyCode();// 获取按键
 		switch (key) {// 将方向键的状态重置为false
-		case KeyEvent.VK_CONTROL:// 释放ctrl键时，坦克开炮（如果设为键被按时开炮，会导致按住ctrl不动时发射的子弹过于密集）
-			fire();
-			break;
 		case KeyEvent.VK_UP:
 			bU = false;
 			break;
@@ -212,8 +210,17 @@ public class Tank {// 坦克类
 		case KeyEvent.VK_RIGHT:
 			bR = false;
 			break;
-		case KeyEvent.VK_S://释放S键时发射超级炮弹
+		case KeyEvent.VK_F:// 释放F键时，坦克开炮（如果设为键被按时开炮，会导致按住F不动时发射的子弹过于密集）
+			fire();
+			break;
+		case KeyEvent.VK_S:// 释放S键时发射超级炮弹
 			superFire();
+			break;
+		case KeyEvent.VK_F2:
+			if (this.live == false) {
+				this.live = true;
+				this.life = LIFE;
+			}
 			break;
 		}
 		locateDirection();
@@ -228,6 +235,7 @@ public class Tank {// 坦克类
 		tc.missiles.add(m);// 将子弹放入容器
 		return m;// 返回该子弹对象
 	}
+
 	public Missile fire(Direction dir) {// 重载fire方法，用于发射超级炮弹
 		if (!live)// 死了就不能发射
 			return null;
@@ -266,23 +274,53 @@ public class Tank {// 坦克类
 		}
 		return false;
 	}
-	
-	public boolean collidesWithTanks(List<Tank> tanks) {//解决坦克之间的重叠问题
-		for(int i = 0; i < tanks.size(); i++) {//遍历容器中的坦克
+
+	public boolean collidesWithTanks(List<Tank> tanks) {// 解决坦克之间的重叠问题
+		for (int i = 0; i < tanks.size(); i++) {// 遍历容器中的坦克
 			Tank t = tanks.get(i);
-			if(this.live && t.live && this.getRect().intersects(t.getRect())) {//如果两辆坦克都活着且发生碰撞
-				this.stay();//均返回上一步坐标，避免互相重叠
+			if (this.live && t.live && this.getRect().intersects(t.getRect())) {// 如果两辆坦克都活着且发生碰撞
+				this.stay();// 均返回上一步坐标，避免互相重叠
 				t.stay();
 				return true;
 			}
 		}
 		return false;
 	}
-	
-	private void superFire() {//发射超级炮弹（同时朝八个方向发射）
-		Direction[] dirs = Direction.values();//枚举类型不能直接根据索引取值，应先获取对应数组
-		for(int i = 0; i < dirs.length - 1; i++) {//向除STOP外的每个方向开炮
+
+	private void superFire() {// 发射超级炮弹（同时朝八个方向发射）
+		Direction[] dirs = Direction.values();// 枚举类型不能直接根据索引取值，应先获取对应数组
+		for (int i = 0; i < dirs.length - 1; i++) {// 向除STOP外的每个方向开炮
 			fire(dirs[i]);
 		}
+	}
+
+	public int getLife() {// 供外部访问私有变量life
+		return life;
+	}
+
+	public void setLife(int life) {
+		this.life = life;
+	}
+
+	private class BloodBar {
+		public void draw(Graphics g) {
+			int w = WIDTH * life / LIFE;// 当前血条宽度
+			Color c = g.getColor();
+			g.setColor(Color.RED);
+			g.drawRect(x, y - 10, WIDTH, 5);// 总血条框
+			g.setColor(Color.RED);
+			g.fillRect(x, y - 10, w, 5);// 当前血条
+			g.setColor(c);
+
+		}
+	}
+
+	public boolean eat(Blood b) {
+		if (b.isLive() && this.live && this.getRect().intersects(b.getRect())) {
+			this.life += 20;
+			b.setLive(false);
+			return true;
+		}
+		return false;
 	}
 }

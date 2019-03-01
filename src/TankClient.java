@@ -13,10 +13,11 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	public static final int GAME_WIDTH = 800;// 窗口宽度
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
-	Tank myTank = new Tank(100, 100, true, Tank.Direction.STOP, this);
+	Tank myTank = new Tank(100, 100, true, Direction.STOP, this);
 	// 创建我方坦克对象，初始坐标（100，100），静止状态，传入当前TankClient对象
-	Wall w1 = new Wall(70, 120, 230, 40, this);//生成两堵墙
+	Wall w1 = new Wall(70, 120, 230, 40, this);// 生成两堵墙
 	Wall w2 = new Wall(500, 200, 40, 150, this);
+	Blood b = new Blood();// 生成血块
 
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
 	List<Explosion> explosions = new ArrayList<Explosion>(); // 装爆炸的容器
@@ -29,13 +30,17 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		g.setColor(Color.WHITE);// 画笔设为白色
 		g.drawString("missiles count: " + missiles.size(), 10, 50);// 在合适坐标写出当前子弹数量
 		g.drawString("explosions count: " + explosions.size(), 10, 70);// 当前爆炸数量
-		g.drawString("enemy count: "+tanks.size(), 10, 90);//敌方坦克数量
+		g.drawString("enemy count: " + tanks.size(), 10, 90);// 敌方坦克数量
 		g.setColor(c);// 还原颜色
+		if (tanks.size() == 0)
+			for (int i = 0; i < 10; i++) {// 每当敌方坦克数量为0时就生成十辆
+				tanks.add(new Tank(50 + 40 * (i + 1), 500, false, Direction.D, this));
+			}
 
 		for (int i = 0; i < missiles.size(); i++) {// 循环操作，取出容器中的子弹并画出来
 			Missile m = missiles.get(i);
-			m.hitTanks(tanks);//判断子弹是否击中容器内的某辆坦克
-			m.hitTank(myTank);//判断子弹是否击中自己的坦克
+			m.hitTanks(tanks);// 判断子弹是否击中容器内的某辆坦克
+			m.hitTank(myTank);// 判断子弹是否击中自己的坦克
 			m.hitWall(w1);
 			m.hitWall(w2);
 			m.draw(g);
@@ -45,17 +50,18 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			Explosion e = explosions.get(i);
 			e.draw(g);
 		}
-		
-		for(int i = 0; i < tanks.size(); i++) {//遍历所有敌方坦克并画出
+
+		for (int i = 0; i < tanks.size(); i++) {// 遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
-			t.collidesWithWall(w1);//坦克撞墙处理
+			t.collidesWithWall(w1);// 坦克撞墙处理
 			t.collidesWithWall(w2);
 			t.draw(g);
 		}
 
+		b.draw(g);// 画血块
 		myTank.draw(g);// 调用对象里的draw方法，传入画笔g画出坦克
-		
-		w1.draw(g);
+		myTank.eat(b);// 吃血块
+		w1.draw(g);// 画墙
 		w2.draw(g);
 	}
 
@@ -73,9 +79,6 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	}
 
 	public void launchFrame() {// 定义一个方法，用于初始化窗口
-		for (int i = 0; i < 10; i++) {// 初始化十辆敌方坦克
-			tanks.add(new Tank(50 + 40 * (i + 1), 300, false,Tank.Direction.D, this));
-		}
 		this.setLocation(600, 200);// 窗口位置
 		this.setSize(GAME_WIDTH, GAME_HEIGHT);// 窗口大小
 		this.setTitle("TankWar");// 窗口标题

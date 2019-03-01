@@ -10,19 +10,19 @@ public class Missile {//子弹类
 	public static final int SPEED = 20;//子弹每次向横纵坐标移动的距离，可当作速度，子弹速度应大于坦克速度
 	
 	int x, y;//子弹初始坐标
-	Tank.Direction dir;//子弹运动方向只能是坦克类中已列举出来的九个方向之一
+	Direction dir;//子弹运动方向只能是坦克类中已列举出来的九个方向之一
 	
 	private boolean live = true;//表示子弹生命，默认活着
 	private boolean good = true;//子弹性质，用于区分敌我，己方子弹只能打敌方坦克
 	private TankClient tc;//用于访问此类成员变量
 
-	public Missile(int x, int y, Tank.Direction dir) {//用于创建指定坐标和方向的子弹对象
+	public Missile(int x, int y, Direction dir) {//用于创建指定坐标和方向的子弹对象
 		this.x = x;
 		this.y = y;
 		this.dir = dir;
 	}
 	
-	public Missile(int x, int y, Tank.Direction dir,boolean good, TankClient tc) {//重载构造方法，传入TankClient对象，通过持有它的引用来访问成员变量
+	public Missile(int x, int y, Direction dir,boolean good, TankClient tc) {//重载构造方法，传入TankClient对象，通过持有它的引用来访问成员变量
 		this(x, y, dir);//调用另一个构造方法
 		this.tc = tc;//初始化tc
 		this.good = good;//定义子弹是敌是友
@@ -91,7 +91,13 @@ public class Missile {//子弹类
 	public boolean hitTank(Tank t) {//判断子弹是否击中坦克
 		if(this.live && this.getRect().intersects(t.getRect()) && t.isLive() && this.good != t.isGood()) {
 			//如果子弹方块和坦克方块相交，子弹坦克都活着，且阵营不同
-			t.setLive(false);//坦克死亡
+			if(t.isGood()) {//如果是我方坦克
+				t.setLife(t.getLife() - 20);//被击中一次生命减20
+				if(t.getLife() == 0)//生命值为0时
+					t.setLive(false);//坦克死亡
+			}else {//敌方坦克被击中直接死亡
+				t.setLive(false);
+			}
 			this.live = false;//子弹死亡
 			Explosion e = new Explosion(x, y, tc);//击中坦克时产生爆炸
 			tc.explosions.add(e);
