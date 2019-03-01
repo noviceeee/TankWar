@@ -17,10 +17,10 @@ public class Tank {// 坦克类
 
 	private boolean live = true;// 坦克生命状态，默认活着
 	private int life = LIFE;// （我方）坦克生命值
-	private BloodBar bb = new BloodBar();//创建血条
+	private BloodBar bb = new BloodBar();// 创建血条
 
-	private int skill = SKILL;//我方坦克技能值
-	private SkillBar sb = new SkillBar();//创建技能条
+	private int skill = SKILL;// 我方坦克技能值
+	private SkillBar sb = new SkillBar();// 创建技能条
 
 	private boolean good = true;// 区分敌方我方坦克
 
@@ -259,8 +259,8 @@ public class Tank {// 坦克类
 
 	public boolean isLive() {// 判断坦克是否活着，由于live属性是私有的，外部无法直接使用，所以向外提供一个访问方法
 		if (!live && !this.isGood() && r.nextInt(5) > 1) {// 如果敌方坦克死亡就有概率掉落血块
-			int x = this.x + WIDTH / 2 - Missile.WIDTH / 2;// 血块左上角横坐标
-			int y = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;// 血块左上角纵坐标
+			int x = this.x + WIDTH / 2 - Blood.WIDTH / 2;// 血块左上角横坐标
+			int y = this.y + HEIGHT / 2 - Blood.HEIGHT / 2;// 血块左上角纵坐标
 			Blood b = new Blood(x, y, tc);
 			tc.bloods.add(b);
 		}
@@ -291,11 +291,12 @@ public class Tank {// 坦克类
 	public boolean collidesWithTanks(List<Tank> tanks) {// 解决坦克之间的重叠问题
 		for (int i = 0; i < tanks.size(); i++) {// 遍历容器中的坦克
 			Tank t = tanks.get(i);
-			if (this.live && t.live && this.getRect().intersects(t.getRect())) {// 如果两辆坦克都活着且发生碰撞
+			if (this != t && this.live && t.live && this.getRect().intersects(t.getRect())) {// 如果两辆不相同的坦克都活着且发生碰撞
 				this.stay();// 均返回上一步坐标，避免互相重叠
 				t.stay();
 				return true;
 			}
+
 		}
 		return false;
 	}
@@ -339,7 +340,7 @@ public class Tank {// 坦克类
 				b.setLive(false);
 				if (this.life < LIFE)// 血条不满时回血，满血时无效
 					this.life += 1;
-				if(this.skill < SKILL)//技能条不满时回复技能
+				if (this.skill < SKILL)// 技能条不满时回复技能
 					this.skill += 2;
 				return true;
 			}

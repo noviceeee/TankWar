@@ -98,6 +98,8 @@ public class Missile {// 子弹类
 			} else {// 敌方坦克被击中直接死亡
 				t.setLive(false);
 			}
+			if (this.good)// 如果我方子弹击中敌方，我方得分
+				tc.score++;
 			this.live = false;// 子弹死亡
 			Explosion e = new Explosion(x, y, tc);// 击中坦克时产生爆炸
 			tc.explosions.add(e);
