@@ -5,7 +5,7 @@ public class Explosion {
 	int x, y;// 爆炸坐标
 	private boolean live = true;// 爆炸的生命状态，默认为活着
 
-	int[] diameter = { 4, 10, 25, 41, 66, 30, 14, 6 };// 用不同直径的圆模拟爆炸过程
+	int[] diameter = { 4, 10, 25, 46, 77, 30, 14, 6 };// 用不同直径的圆模拟爆炸过程
 	int step = 0;// 爆炸阶段，对应不同直径
 
 	private TankClient tc;// 持有引用

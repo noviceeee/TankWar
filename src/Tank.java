@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.util.List;
 import java.util.Random;
 
 public class Tank {// 坦克类
@@ -132,7 +133,7 @@ public class Tank {// 坦克类
 
 		if (x < 0)// 解决坦克出界问题，运动到窗口边缘时无法前进
 			x = 0;
-		if (y < 40)
+		if (y < 40)//窗口的标题栏高度
 			y = 40;
 		if (x > TankClient.GAME_WIDTH - WIDTH)
 			x = TankClient.GAME_WIDTH - WIDTH;
@@ -195,7 +196,7 @@ public class Tank {// 坦克类
 
 	public void keyReleased(KeyEvent e) {// 释放按键时
 		int key = e.getKeyCode();// 获取按键
-		switch (key) {// 将该方向键的状态重置为false
+		switch (key) {// 将方向键的状态重置为false
 		case KeyEvent.VK_CONTROL:// 释放ctrl键时，坦克开炮（如果设为键被按时开炮，会导致按住ctrl不动时发射的子弹过于密集）
 			fire();
 			break;
@@ -211,6 +212,9 @@ public class Tank {// 坦克类
 		case KeyEvent.VK_RIGHT:
 			bR = false;
 			break;
+		case KeyEvent.VK_S://释放S键时发射超级炮弹
+			superFire();
+			break;
 		}
 		locateDirection();
 	}
@@ -221,6 +225,15 @@ public class Tank {// 坦克类
 		int x = this.x + WIDTH / 2 - Missile.WIDTH / 2;// 子弹左上角横坐标
 		int y = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;// 子弹左上角纵坐标
 		Missile m = new Missile(x, y, ptDir, good, this.tc);// 创建一个和炮筒相同方向，位于坦克中央的己方子弹对象，并传入TankClient对象
+		tc.missiles.add(m);// 将子弹放入容器
+		return m;// 返回该子弹对象
+	}
+	public Missile fire(Direction dir) {// 重载fire方法，用于发射超级炮弹
+		if (!live)// 死了就不能发射
+			return null;
+		int x = this.x + WIDTH / 2 - Missile.WIDTH / 2;// 子弹左上角横坐标
+		int y = this.y + HEIGHT / 2 - Missile.HEIGHT / 2;// 子弹左上角纵坐标
+		Missile m = new Missile(x, y, dir, good, this.tc);// 创建一个某方向、位于坦克中央的己方子弹对象，并传入TankClient对象
 		tc.missiles.add(m);// 将子弹放入容器
 		return m;// 返回该子弹对象
 	}
@@ -246,11 +259,30 @@ public class Tank {// 坦克类
 		y = oldY;
 	}
 
-	public boolean collideWithWall(Wall w) {// 当撞墙时坦克返回上一步坐标（重新选择方向，避免停在墙前不动）
+	public boolean collidesWithWall(Wall w) {// 当撞墙时坦克返回上一步坐标（重新选择方向，避免停在墙前不动）
 		if (this.live && this.getRect().intersects(w.getRect())) {// 简单检测坦克活着时和墙是否碰撞
 			this.stay();
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean collidesWithTanks(List<Tank> tanks) {//解决坦克之间的重叠问题
+		for(int i = 0; i < tanks.size(); i++) {//遍历容器中的坦克
+			Tank t = tanks.get(i);
+			if(this.live && t.live && this.getRect().intersects(t.getRect())) {//如果两辆坦克都活着且发生碰撞
+				this.stay();//均返回上一步坐标，避免互相重叠
+				t.stay();
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void superFire() {//发射超级炮弹（同时朝八个方向发射）
+		Direction[] dirs = Direction.values();//枚举类型不能直接根据索引取值，应先获取对应数组
+		for(int i = 0; i < dirs.length - 1; i++) {//向除STOP外的每个方向开炮
+			fire(dirs[i]);
+		}
 	}
 }

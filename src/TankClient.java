@@ -16,7 +16,7 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	Tank myTank = new Tank(100, 100, true, Tank.Direction.STOP, this);
 	// 创建我方坦克对象，初始坐标（100，100），静止状态，传入当前TankClient对象
 	Wall w1 = new Wall(70, 120, 230, 40, this);//生成两堵墙
-	Wall w2 = new Wall(330, 200, 40, 150, this);
+	Wall w2 = new Wall(500, 200, 40, 150, this);
 
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
 	List<Explosion> explosions = new ArrayList<Explosion>(); // 装爆炸的容器
@@ -48,8 +48,8 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		
 		for(int i = 0; i < tanks.size(); i++) {//遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
-			t.collideWithWall(w1);//坦克撞墙处理
-			t.collideWithWall(w2);
+			t.collidesWithWall(w1);//坦克撞墙处理
+			t.collidesWithWall(w2);
 			t.draw(g);
 		}
 
