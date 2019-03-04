@@ -17,9 +17,10 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	public int time = 2 * 60 * 1000;// 游戏剩余时间（毫秒）
 
 	Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
-	// 创建我方坦克对象，初始坐标（100，500），静止状态，传入当前TankClient对象
-	Wall w1 = new Wall(70, 120, 230, 40, this);// 生成两堵墙
-	Wall w2 = new Wall(500, 200, 40, 150, this);
+	// 创建我方坦克对象，指定初始坐标，静止状态，传入当前TankClient对象
+
+	Wall w1 = new Wall(50, 120 ,this);// 生成两堵墙
+	Wall w2 = new Wall(300, 200,this);
 
 	List<Tank> tanks = new ArrayList<Tank>();// 装坦克的容器
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
@@ -34,10 +35,6 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		g.drawString("YOUR SCORE: " + score, 10, 50);// 在合适坐标写出当前得分
 		g.drawString("YOUR TIME: " + new Time(time).timeToString(), 10, 70);// 在合适坐标写出所剩时间
 		g.setColor(c);// 还原颜色
-		if (tanks.size() == 0)
-			for (int i = 0; i < ConfigManager.getProperties("enemy"); i++) {// 每当敌方坦克数量为0时就生成一定数量
-				tanks.add(new Tank(50 + 60 * (i + 1), 500, false, Direction.D, this));
-			}
 
 		for (int i = 0; i < missiles.size(); i++) {// 循环操作，取出容器中的子弹并画出来
 			Missile m = missiles.get(i);
@@ -57,6 +54,10 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			b.draw(g);
 		}
 
+		if (tanks.size() == 0)
+			for (int i = 0; i < ConfigManager.getProperties("enemy"); i++) {// 每当敌方坦克数量为0时就生成一定数量
+				tanks.add(new Tank(50 + 60 * (i + 1), 500, false, Direction.D, this));
+			}
 		for (int i = 0; i < tanks.size(); i++) {// 遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
 			t.collidesWithWall(w1);// 坦克撞墙处理

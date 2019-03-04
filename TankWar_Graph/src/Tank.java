@@ -1,68 +1,19 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class Tank {// 坦克类
 
-	public static final int WIDTH = 35;// 坦克图片宽度
-	public static final int HEIGHT = 35;// 坦克图片高度
-	public static final int SPEED = ConfigManager.getProperties("speed");// 坦克每次向横纵坐标方向移动的距离，可当作速度
-	public static final int LIFE = ConfigManager.getProperties("myLife");// 我方坦克总血量
-	public static final int SKILL = ConfigManager.getProperties("mySkill");// 我方坦克总技能值
-	
-	private static TankClient tc;// 用于访问此类成员变量
-	private static Toolkit tk = Toolkit.getDefaultToolkit();/// 拿到默认工具包，通过工具包的方法把硬盘上的图片加载进内存
-	private static Map<String, Image> imgs = new HashMap<String, Image>();//存敌方坦克图片的容器，利用键值对，方便根据代表方向的字符串获取对应图片
-	private static Map<String, Image> gImgs = new HashMap<String, Image>();//存我方坦克图片
-	private static Image[] images= null;
-	static {//静态代码块，随着类的加载而执行
-		images = new Image[]{
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankLU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankL.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankLD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankRD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankR.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankRU.gif")),
-				
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankLU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankL.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankLD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankRD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankR.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankRU.gif"))
-		};
-		imgs.put("U", images[0]);
-		imgs.put("LU", images[1]);
-		imgs.put("L", images[2]);
-		imgs.put("LD", images[3]);
-		imgs.put("D", images[4]);
-		imgs.put("RD", images[5]);
-		imgs.put("R", images[6]);
-		imgs.put("RU", images[7]);
-		
-		gImgs.put("U", images[8]);
-		gImgs.put("LU", images[9]);
-		gImgs.put("L", images[10]);
-		gImgs.put("LD", images[11]);
-		gImgs.put("D", images[12]);
-		gImgs.put("RD", images[13]);
-		gImgs.put("R", images[14]);
-		gImgs.put("RU", images[15]);
-		
-		
-	}
+	public static final int WIDTH = 40;// 坦克宽度
+	public static final int HEIGHT = 40;// 坦克高度
+	public static final int SPEED = 5;// 坦克每次向横纵坐标方向移动的距离，可当作速度
+	public static final int LIFE = 5;// 我方坦克总血量
+	public static final int SKILL = 10;// 我方坦克总技能值
 
+	TankClient tc;// 用于访问此类成员变量
 
 	private boolean live = true;// 坦克生命状态，默认活着
 	private int life = LIFE;// （我方）坦克生命值
@@ -105,60 +56,40 @@ public class Tank {// 坦克类
 				tc.tanks.remove(this);// 如果是敌方坦克，就将其从容器中移出
 			return;
 		}
-		if(!good)//敌方图片
-		switch (ptDir) {// 根据炮筒方向显示不同坦克图片
+		Color c = g.getColor();// 取出当前颜色
+		if (good)
+			g.setColor(Color.RED);// 我方坦克为红色
+		else
+			g.setColor(Color.BLUE);// 敌方坦克为蓝色
+		g.fillOval(x, y, WIDTH, HEIGHT);// 画一个圆作为坦克，设置其坐标，宽度和高度（左上角为原点， x轴向右，y轴向下）
+		g.setColor(Color.WHITE);// 设置画笔为白色
+		switch (ptDir) {// 根据炮筒方向画出炮筒（懒得计算了，所以对角线方向炮筒略长）
 		case U:
-			g.drawImage(imgs.get("U"), x,y, null);
+			g.drawLine(x + WIDTH / 2, y, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case LU:
-			g.drawImage(imgs.get("LU"), x,y, null);
+			g.drawLine(x, y, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case L:
-			g.drawImage(imgs.get("L"), x,y, null);
+			g.drawLine(x, y + HEIGHT / 2, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case LD:
-			g.drawImage(imgs.get("LD"), x,y, null);
+			g.drawLine(x, y + HEIGHT, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case D:
-			g.drawImage(imgs.get("D"), x,y, null);
+			g.drawLine(x + WIDTH / 2, y + HEIGHT, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case RD:
-			g.drawImage(imgs.get("RD"), x,y, null);
+			g.drawLine(x + WIDTH, y + HEIGHT, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case R:
-			g.drawImage(imgs.get("R"), x,y, null);
+			g.drawLine(x + WIDTH, y + HEIGHT / 2, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		case RU:
-			g.drawImage(imgs.get("RU"), x,y, null);
+			g.drawLine(x + WIDTH, y, x + WIDTH / 2, y + HEIGHT / 2);
 			break;
 		}
-		else
-			switch (ptDir) {// 根据炮筒方向显示不同坦克图片
-			case U:
-				g.drawImage(gImgs.get("U"), x,y, null);
-				break;
-			case LU:
-				g.drawImage(gImgs.get("LU"), x,y, null);
-				break;
-			case L:
-				g.drawImage(gImgs.get("L"), x,y, null);
-				break;
-			case LD:
-				g.drawImage(gImgs.get("LD"), x,y, null);
-				break;
-			case D:
-				g.drawImage(gImgs.get("D"), x,y, null);
-				break;
-			case RD:
-				g.drawImage(gImgs.get("RD"), x,y, null);
-				break;
-			case R:
-				g.drawImage(gImgs.get("R"), x,y, null);
-				break;
-			case RU:
-				g.drawImage(gImgs.get("RU"), x,y, null);
-				break;
-			}
+		g.setColor(c);// 恢复当前颜色
 
 		move();// 每次画坦克都调用此方法，通过改变坦克坐标实现移动效果
 		if (this.good) {// 画出我方坦克血条和技能条
@@ -292,11 +223,7 @@ public class Tank {// 坦克类
 			superFire();
 			break;
 		case KeyEvent.VK_F2:// 我方死亡时按F2键复活，血条技能条重置
-			if (this.live == false) {
-				this.live = true;
-				this.life = LIFE;
-				this.skill = SKILL;
-			}
+			resurrect();
 			break;
 		}
 		locateDirection();
@@ -388,19 +315,6 @@ public class Tank {// 坦克类
 		this.life = life;
 	}
 
-	private class BloodBar {
-		public void draw(Graphics g) {
-			int w = WIDTH * life / LIFE;// 当前血条宽度
-			Color c = g.getColor();
-			g.setColor(Color.RED);
-			g.drawRect(x, y - 18, WIDTH, 3);// 血条总宽度
-			g.setColor(Color.RED);
-			g.fillRect(x, y - 18, w, 3);// 当前血条
-			g.setColor(c);
-
-		}
-	}
-
 	public boolean eat(List<Blood> bloods) {// 坦克吃血块回血回技能
 		for (int i = 0; i < bloods.size(); i++) {
 			Blood b = bloods.get(i);
@@ -410,11 +324,29 @@ public class Tank {// 坦克类
 				if (this.life < LIFE)// 血条不满时回血，满血时无效
 					this.life += 1;
 				if (this.skill < SKILL)// 技能条不满时回复技能
-					this.skill += 1;
+					this.skill += 2;
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private void resurrect() {//满血复活，复活地点随机
+		if (this.live == false) {
+			this.live = true;
+			this.life = LIFE;
+			if(tc.score> 0)//复活一次扣1分，到零为止
+			tc.score -= 1;
+			randomLocate();
+			while(collidesWithTanks(tc.tanks)) {//如果复活点存在其他坦克，就换个地点，避免两辆坦克卡住
+			randomLocate();
+			}
+		}
+	}
+	
+	private void randomLocate() {//在窗口范围内随机生成坐标位置
+		x = r.nextInt(tc.GAME_WIDTH+1);//横坐标是[0, tc.GAME_WIDTH+1)区间上的整数，不包含tc.GAME_WIDTH+1
+		y = 40+r.nextInt(tc.GAME_HEIGHT-40+1);//纵坐标同理，减去窗口的标题栏高度40
 	}
 
 	private class SkillBar {
@@ -422,9 +354,22 @@ public class Tank {// 坦克类
 			int w = WIDTH * skill / SKILL;// 当前技能条宽度
 			Color c = g.getColor();
 			g.setColor(Color.GREEN);
-			g.drawRect(x, y - 13, WIDTH, 3);// 技能条总宽度
+			g.drawRect(x, y - 10, WIDTH, 3);// 技能条总宽度
 			g.setColor(Color.GREEN);
-			g.fillRect(x, y - 13, w, 3);// 当前技能值
+			g.fillRect(x, y - 10, w, 3);// 当前技能值
+			g.setColor(c);
+
+		}
+	}
+
+	private class BloodBar {
+		public void draw(Graphics g) {
+			int w = WIDTH * life / LIFE;// 当前血条宽度
+			Color c = g.getColor();
+			g.setColor(Color.RED);
+			g.drawRect(x, y - 15, WIDTH, 3);// 血条总宽度
+			g.setColor(Color.RED);
+			g.fillRect(x, y - 15, w, 3);// 当前血条
 			g.setColor(c);
 
 		}

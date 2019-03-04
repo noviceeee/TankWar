@@ -13,14 +13,14 @@ public class Wall {
 		this.width = width;
 		this.tc = tc;
 	}
-	
+
 	public void draw(Graphics g) {
 		Color c = g.getColor();
 		g.setColor(Color.WHITE);
-		g.fillRect(x, y, width, height);//»­°×Ç½
+		g.fillRect(x, y, width, height);// »­°×Ç½
 		g.setColor(c);
 	}
-	
+
 	public Rectangle getRect() {
 		return new Rectangle(x, y, width, height);
 	}

@@ -33,7 +33,7 @@ public class Blood {// 敌方坦克被摧毁后掉落血块，我方吃掉后可恢复一定血量
 			return;
 		}
 		Color c = g.getColor();
-		g.setColor(Color.RED);
+		g.setColor(Color.PINK);
 		g.fillRect(x, y, WIDTH, HEIGHT);// 画出血块
 		g.setColor(c);
 		time--;// 每画一次，血块存活时间减少

@@ -84,7 +84,7 @@ public class Tank {// 坦克类
 
 	private int step = r.nextInt(12) + 1;// 定义坦克朝某一方向移动的步数，用于使敌方随机运动更加不规则
 
-	public Tank(int x, int y, boolean good) {// 构造方法，用于创建指定坐标的坦克对象
+	public Tank(int x, int y, boolean good) {// 构造方法
 		this.x = x;
 		this.y = y;
 		this.good = good;
@@ -292,11 +292,7 @@ public class Tank {// 坦克类
 			superFire();
 			break;
 		case KeyEvent.VK_F2:// 我方死亡时按F2键复活，血条技能条重置
-			if (this.live == false) {
-				this.live = true;
-				this.life = LIFE;
-				this.skill = SKILL;
-			}
+			resurrect();
 			break;
 		}
 		locateDirection();
@@ -388,19 +384,6 @@ public class Tank {// 坦克类
 		this.life = life;
 	}
 
-	private class BloodBar {
-		public void draw(Graphics g) {
-			int w = WIDTH * life / LIFE;// 当前血条宽度
-			Color c = g.getColor();
-			g.setColor(Color.RED);
-			g.drawRect(x, y - 18, WIDTH, 3);// 血条总宽度
-			g.setColor(Color.RED);
-			g.fillRect(x, y - 18, w, 3);// 当前血条
-			g.setColor(c);
-
-		}
-	}
-
 	public boolean eat(List<Blood> bloods) {// 坦克吃血块回血回技能
 		for (int i = 0; i < bloods.size(); i++) {
 			Blood b = bloods.get(i);
@@ -415,6 +398,37 @@ public class Tank {// 坦克类
 			}
 		}
 		return false;
+	}
+	
+	private void resurrect() {//满血复活，复活地点随机
+		if (this.live == false) {
+			this.live = true;
+			this.life = LIFE;
+			if(tc.score> 0)//复活一次扣1分，到零为止
+			tc.score -= 1;
+			randomLocate();
+			while(collidesWithTanks(tc.tanks)) {//如果复活点存在其他坦克，就换个地点，避免两辆坦克卡住
+			randomLocate();
+			}
+		}
+	}
+	
+	private void randomLocate() {//在窗口范围内随机生成坐标位置
+		x = r.nextInt(tc.GAME_WIDTH+1);//横坐标是[0, tc.GAME_WIDTH+1)区间上的整数，不包含tc.GAME_WIDTH+1
+		y = 40+r.nextInt(tc.GAME_HEIGHT-40+1);//纵坐标同理，减去窗口的标题栏高度40
+	}
+	
+	private class BloodBar {
+		public void draw(Graphics g) {
+			int w = WIDTH * life / LIFE;// 当前血条宽度
+			Color c = g.getColor();
+			g.setColor(Color.RED);
+			g.drawRect(x, y - 18, WIDTH, 3);// 血条总宽度
+			g.setColor(Color.RED);
+			g.fillRect(x, y - 18, w, 3);// 当前血条
+			g.setColor(c);
+			
+		}
 	}
 
 	private class SkillBar {
