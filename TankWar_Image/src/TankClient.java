@@ -14,13 +14,14 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
 	public int score = 0;// 初始得分
-	public int time = 2 * 60 * 1000;// 游戏剩余时间（毫秒）
+	private int time = 2 * 60 * 1000;// 游戏剩余时间（毫秒）
+	private boolean isPlay = true;// 控制游戏暂停/开始
 
 	Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
 	// 创建我方坦克对象，指定初始坐标，静止状态，传入当前TankClient对象
 
-	Wall w1 = new Wall(50, 120 ,this);// 生成两堵墙
-	Wall w2 = new Wall(300, 200,this);
+	Wall w1 = new Wall(50, 120, this);// 生成两堵墙
+	Wall w2 = new Wall(300, 200, this);
 
 	List<Tank> tanks = new ArrayList<Tank>();// 装坦克的容器
 	List<Missile> missiles = new ArrayList<Missile>();// 创建一个装子弹的容器，泛型类型为Missile
@@ -115,15 +116,22 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	private class PaintThread implements Runnable {// 创建线程，不断重画改变位置的坦克，实现移动
 		public void run() {// 此方法包含要执行的线程内容
 			while (true) {// 无限循环
-				if(time == 0)//如果时间到了，游戏结束
-					return;
-				repaint();// 重绘此组件，如果此组件是轻量级组件，则此方法会尽快调用此组件的 paint 方法。否则此方法会尽快调用此组件的 update 方法。
-				try {
-					Thread.sleep(100);// 每隔100毫秒调用一次repaint方法
-					time -= 100;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				if (isPlay) {// 游戏状态
+					if (time == 0)// 如果时间到了，游戏结束
+						return;
+					repaint();// 重绘此组件，如果此组件是轻量级组件，则此方法会尽快调用此组件的 paint 方法。否则此方法会尽快调用此组件的 update 方法。
+					try {
+						Thread.sleep(100);// 每隔100毫秒调用一次repaint方法
+						time -= 100;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} else// 暂停状态
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					} // 每隔100毫秒调用一次repaint方法
 			}
 		}
 	}
@@ -133,6 +141,13 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 
 		public void keyReleased(KeyEvent e) {
 			myTank.keyReleased(e);// 释放按键时触发事件
+			int key = e.getKeyCode();
+			if (key == KeyEvent.VK_SPACE) {// 如果按下空格键，游戏暂停/开始
+				if (isPlay)
+					isPlay = false;
+				else
+					isPlay = true;
+			}
 		}
 
 		public void keyPressed(KeyEvent e) {// 当按下按键时触发事件
