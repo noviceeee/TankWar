@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -8,14 +9,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
-public class TankClient extends Frame {// 坦克客户端，为网络版做准备
+public class TankClient extends Frame {
 	public static final int GAME_WIDTH = 800;// 窗口宽度
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
 	public int score = 0;// 初始得分
 	private int time = 2 * 60 * 1000;// 游戏剩余时间（毫秒）
-	private boolean isPlay = true;// 控制游戏暂停/开始
+	private boolean play = true;// 控制游戏暂停/开始
+	private static boolean restart = false;// 控制游戏重新开始
 
 	Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
 	// 创建我方坦克对象，指定初始坐标，静止状态，传入当前TankClient对象
@@ -30,7 +33,26 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 
 	Image offScreenImage = null;// 创建一个虚拟图像，用于实现双缓冲，解决闪烁问题，即:将所有东西画在这个图像上，再一次性显示出来
 
+	private void init() {// 用于重新开始时初始化数据
+		score = 0;
+		time = 2 * 60 * 1000;
+		play = true;
+		restart = false;
+		myTank = new Tank(50, 50, true, Direction.STOP, this);
+		tanks.clear();
+		missiles.clear();
+		explosions.clear();
+		bloods.clear();
+	}
+
 	public void paint(Graphics g) {// 重写paint方法，相当于建立一个画布，用画笔 g画图
+		if (time > 0)
+			play(g);// 游戏运行界面
+		else
+			gameOver(g);// 游戏结束界面
+	}
+
+	private void play(Graphics g) {
 		Color c = g.getColor();// 取出当前颜色
 		g.setColor(Color.WHITE);// 画笔设为白色
 		g.drawString("YOUR SCORE: " + score, 10, 50);// 在合适坐标写出当前得分
@@ -74,6 +96,18 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		w2.draw(g);
 	}
 
+	private void gameOver(Graphics g) {// 游戏结束界面
+		Color c = g.getColor();
+		g.setColor(Color.WHITE);
+		g.setFont(new Font("宋体", Font.BOLD, 120));
+		g.drawString("GAME OVER", 90, 280);
+		g.setFont(new Font("宋体", Font.BOLD, 50));
+		g.drawString("your score: " + score, 200, 450);
+		g.setFont(new Font("宋体", Font.CENTER_BASELINE, 20));
+		g.drawString("press R to play again", 270, 500);
+		g.setColor(c);
+	}
+
 	public void update(Graphics g) {// 对于重量级组件，由于重新绘制时间长，容易产生闪烁的现象，所以一般是采用重写 update 方法，利用双缓冲图片来解决闪烁的问题
 		if (offScreenImage == null) {
 			offScreenImage = this.createImage(GAME_WIDTH, GAME_HEIGHT);// 创建大小与窗口相同的缓冲图像
@@ -107,8 +141,13 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	}
 
 	public static void main(String[] args) {
-		TankClient tc = new TankClient();
-		tc.launchFrame();
+		do {
+			TankClient tc = new TankClient();
+			tc.launchFrame();
+			if (!restart)
+				break;
+
+		} while (true);
 
 	}
 
@@ -116,9 +155,10 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	private class PaintThread implements Runnable {// 创建线程，不断重画改变位置的坦克，实现移动
 		public void run() {// 此方法包含要执行的线程内容
 			while (true) {// 无限循环
-				if (isPlay) {// 游戏状态
-					if (time == 0)// 如果时间到了，游戏结束
-						return;
+				if (play) {// 游戏状态
+
+					if (time < 0 && restart)// 如果时间到了，若选择重新开始则将所有数据初始化
+						init();
 					repaint();// 重绘此组件，如果此组件是轻量级组件，则此方法会尽快调用此组件的 paint 方法。否则此方法会尽快调用此组件的 update 方法。
 					try {
 						Thread.sleep(100);// 每隔100毫秒调用一次repaint方法
@@ -131,7 +171,8 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
-					} // 每隔100毫秒调用一次repaint方法
+					}
+
 			}
 		}
 	}
@@ -143,11 +184,13 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 			myTank.keyReleased(e);// 释放按键时触发事件
 			int key = e.getKeyCode();
 			if (key == KeyEvent.VK_SPACE) {// 如果按下空格键，游戏暂停/开始
-				if (isPlay)
-					isPlay = false;
+				if (play)
+					play = false;
 				else
-					isPlay = true;
+					play = true;
 			}
+			if (key == KeyEvent.VK_R) // 如果游戏结束，按R键重新开始
+				restart = true;
 		}
 
 		public void keyPressed(KeyEvent e) {// 当按下按键时触发事件
