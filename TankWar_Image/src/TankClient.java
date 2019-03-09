@@ -16,7 +16,7 @@ public class TankClient extends Frame {
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
 	public int score = 0;// 初始得分
-	private int time = 2* 60*1000;// 游戏剩余时间（毫秒）
+	private int time = 2*60*1000;// 游戏剩余时间（毫秒）
 	private boolean play = true;// 控制游戏暂停/开始
 	private static boolean restart = false;// 控制游戏重新开始
 

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.swing.ImageIcon;
+
 public class Tank {// 坦克类
 
 	public static final int WIDTH = 35;// 坦克图片宽度
@@ -24,24 +26,24 @@ public class Tank {// 坦克类
 	private static Image[] images= null;
 	static {//静态代码块，随着类的加载而执行
 		images = new Image[]{
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankLU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankL.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankLD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankRD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankR.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/tankRU.gif")),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankU.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankLU.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankL.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankLD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankRD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankR.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/tankRU.gif")).getImage(),
 				
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankLU.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankL.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankLD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankRD.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankR.gif")),
-				tk.getImage(Tank.class.getClassLoader().getResource("images/goodTankRU.gif"))
-		};
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankU.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankLU.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankL.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankLD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankRD.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankR.gif")).getImage(),
+				new ImageIcon(Tank.class.getClassLoader().getResource("images/GoodTankRU.gif")).getImage(),
+				};
 		imgs.put("U", images[0]);
 		imgs.put("LU", images[1]);
 		imgs.put("L", images[2]);
