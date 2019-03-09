@@ -35,17 +35,12 @@ public class Tank {// 坦克类
 
 	private int step = r.nextInt(12) + 1;// 定义坦克朝某一方向移动的步数，用于使敌方随机运动更加不规则
 
-	public Tank(int x, int y, boolean good) {// 构造方法，用于创建指定坐标的坦克对象
-		this.x = x;
-		this.y = y;
+	public Tank(boolean good, Direction dir, TankClient tc) {	
+		x = r.nextInt(tc.GAME_WIDTH-WIDTH+1);//初始化时在窗口范围内的随机坐标生成坦克
+		y = 40+r.nextInt(tc.GAME_HEIGHT-HEIGHT-40+1);//减去窗口的标题栏高度40
 		this.good = good;
-		this.oldX = x;
-		this.oldY = y;
-	}
-
-	public Tank(int x, int y, boolean good, Direction dir, TankClient tc) {// 构造方法重载，传入TankClient对象，通过持有它的引用来访问成员变量
-		this(x, y, good);// 调用另一个构造方法
-
+		oldX = x;
+		oldY = y;
 		this.tc = tc;// 初始化tc
 		this.dir = dir;// 指定坦克对象的方向
 	}
@@ -276,14 +271,6 @@ public class Tank {// 坦克类
 		y = oldY;
 	}
 
-	public boolean collidesWithWall(Wall w) {// 当撞墙时坦克返回上一步坐标（重新选择方向，避免停在墙前不动）
-		if (this.live && this.getRect().intersects(w.getRect())) {// 简单检测坦克活着时和墙是否碰撞
-			this.stay();
-			return true;
-		}
-		return false;
-	}
-
 	public boolean collidesWithTanks(List<Tank> tanks) {// 解决坦克之间的重叠问题
 		for (int i = 0; i < tanks.size(); i++) {// 遍历容器中的坦克
 			Tank t = tanks.get(i);
@@ -292,7 +279,6 @@ public class Tank {// 坦克类
 				t.stay();
 				return true;
 			}
-
 		}
 		return false;
 	}
@@ -337,16 +323,14 @@ public class Tank {// 坦克类
 			this.life = LIFE;
 			if(tc.score> 0)//复活一次扣1分，到零为止
 			tc.score -= 1;
-			randomLocate();
-			while(collidesWithTanks(tc.tanks)) {//如果复活点存在其他坦克，就换个地点，避免两辆坦克卡住
-			randomLocate();
-			}
+			do{randomLocate();}
+			while(collidesWithTanks(tc.tanks));//如果复活点存在其他坦克，就换个地点，避免两辆坦克卡住
 		}
 	}
 	
 	private void randomLocate() {//在窗口范围内随机生成坐标位置
-		x = r.nextInt(tc.GAME_WIDTH+1);//横坐标是[0, tc.GAME_WIDTH+1)区间上的整数，不包含tc.GAME_WIDTH+1
-		y = 40+r.nextInt(tc.GAME_HEIGHT-40+1);//纵坐标同理，减去窗口的标题栏高度40
+		x = r.nextInt(tc.GAME_WIDTH-WIDTH+1);
+		y = 40+r.nextInt(tc.GAME_HEIGHT-HEIGHT-40+1);//减去窗口的标题栏高度40
 	}
 
 	private class SkillBar {

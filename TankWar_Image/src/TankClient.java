@@ -16,11 +16,11 @@ public class TankClient extends Frame {
 	public static final int GAME_HEIGHT = 600;// 窗口高度
 
 	public int score = 0;// 初始得分
-	private int time = 2 * 60 * 1000;// 游戏剩余时间（毫秒）
+	private int time = 2* 60*1000;// 游戏剩余时间（毫秒）
 	private boolean play = true;// 控制游戏暂停/开始
 	private static boolean restart = false;// 控制游戏重新开始
 
-	Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
+	Tank myTank = new Tank(true, Direction.STOP, this);
 	// 创建我方坦克对象，指定初始坐标，静止状态，传入当前TankClient对象
 
 	Wall w1 = new Wall(50, 120, this);// 生成两堵墙
@@ -38,7 +38,7 @@ public class TankClient extends Frame {
 		time = 2 * 60 * 1000;
 		play = true;
 		restart = false;
-		myTank = new Tank(50, 50, true, Direction.STOP, this);
+		myTank = new Tank(true, Direction.STOP, this);
 		tanks.clear();
 		missiles.clear();
 		explosions.clear();
@@ -79,13 +79,11 @@ public class TankClient extends Frame {
 
 		if (tanks.size() == 0)
 			for (int i = 0; i < ConfigManager.getProperties("enemy"); i++) {// 每当敌方坦克数量为0时就生成一定数量
-				tanks.add(new Tank(50 + 60 * (i + 1), 500, false, Direction.D, this));
+				tanks.add(new Tank(false, Direction.D, this));
 			}
 		for (int i = 0; i < tanks.size(); i++) {// 遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
-			t.collidesWithWall(w1);// 坦克撞墙处理
-			t.collidesWithWall(w2);// 坦克重叠处理
-			t.collidesWithTanks(tanks);
+			t.collidesWithTanks(tanks);// 坦克碰撞处理
 			t.draw(g);
 		}
 
@@ -183,8 +181,8 @@ public class TankClient extends Frame {
 		public void keyReleased(KeyEvent e) {
 			myTank.keyReleased(e);// 释放按键时触发事件
 			int key = e.getKeyCode();
-			if (key == KeyEvent.VK_SPACE) {// 如果按下空格键，游戏暂停/开始
-				if (play)
+			if (key == KeyEvent.VK_SPACE) {// 游戏时间内，如果按下空格键，游戏暂停/开始
+				if (play && time > 0)
 					play = false;
 				else
 					play = true;
@@ -196,6 +194,5 @@ public class TankClient extends Frame {
 		public void keyPressed(KeyEvent e) {// 当按下按键时触发事件
 			myTank.keyPressed(e);// 调用对象方法，通过按键控制坦克移动方向
 		}
-
 	}
 }

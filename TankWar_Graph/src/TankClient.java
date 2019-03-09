@@ -19,7 +19,7 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 	private boolean play = true;// 控制游戏暂停/开始
 	private static boolean restart = false;// 控制游戏重新开始
 
-	Tank myTank = new Tank(50, 50, true, Direction.STOP, this);
+	Tank myTank = new Tank(true, Direction.STOP, this);
 	// 创建我方坦克对象，指定初始坐标，静止状态，传入当前TankClient对象
 	Wall w1 = new Wall(70, 120, 230, 40, this);// 生成两堵墙
 	Wall w2 = new Wall(500, 200, 40, 150, this);
@@ -36,7 +36,7 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		time = 2 * 60 * 1000;
 		play = true;
 		restart = false;
-		myTank = new Tank(50, 50, true, Direction.STOP, this);
+		myTank = new Tank( true, Direction.STOP, this);
 		tanks.clear();
 		missiles.clear();
 		explosions.clear();
@@ -77,12 +77,10 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 
 		if (tanks.size() == 0)
 			for (int i = 0; i < 10; i++) {// 每当敌方坦克数量为0时就生成十辆
-				tanks.add(new Tank(50 + 60 * (i + 1), 500, false, Direction.D, this));
+				tanks.add(new Tank( false, Direction.D, this));
 			}
 		for (int i = 0; i < tanks.size(); i++) {// 遍历所有敌方坦克并画出
 			Tank t = tanks.get(i);
-			t.collidesWithWall(w1);// 坦克撞墙处理
-			t.collidesWithWall(w2);// 坦克重叠处理
 			t.collidesWithTanks(tanks);
 			t.draw(g);
 		}
@@ -149,7 +147,6 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		public void run() {// 此方法包含要执行的线程内容
 			while (true) {// 无限循环
 				if (play) {// 游戏状态
-
 					if (time < 0 && restart)// 如果时间到了，若选择重新开始则将所有数据初始化
 						init();
 					repaint();// 重绘此组件，如果此组件是轻量级组件，则此方法会尽快调用此组件的 paint 方法。否则此方法会尽快调用此组件的 update 方法。
@@ -176,13 +173,13 @@ public class TankClient extends Frame {// 坦克客户端，为网络版做准备
 		public void keyReleased(KeyEvent e) {
 			myTank.keyReleased(e);// 释放按键时触发事件
 			int key = e.getKeyCode();
-			if (key == KeyEvent.VK_SPACE) {// 如果按下空格键，游戏暂停/开始
+			if (key == KeyEvent.VK_SPACE && time >0) {// 游戏时间内如果按下空格键，游戏暂停/开始
 				if (play)
 					play = false;
 				else
 					play = true;
 			}
-			if (key == KeyEvent.VK_R) // 如果游戏结束，按R键重新开始
+			if (key == KeyEvent.VK_R && time < 0) // 如果游戏结束，按R键重新开始
 				restart = true;
 		}
 
